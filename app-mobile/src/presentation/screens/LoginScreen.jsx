@@ -41,7 +41,8 @@ export default function LoginScreen({ navigation }) {
   const { 
     usernameError, 
     passwordError, 
-    validateFields, 
+    validateFields,
+    validateField,
     resetErrors 
   } = useLoginValidation(username, password);
   // --- Fin Uso del Hook ---
@@ -138,10 +139,15 @@ export default function LoginScreen({ navigation }) {
               <TextInput
                 placeholder="Usuario"
                 value={username}
-                onChangeText={setUsername}
+                onChangeText={(text) => {
+                  setUsername(text);
+                  // validación en tiempo real
+                  validateField('username', text);
+                }}
+                onBlur={() => validateField('username', username)}
                 style={styles.input}
                 placeholderTextColor="#888"
-                keyboardType="email-address"
+                maxLength={20}
                 autoCapitalize="none"
                 selectionColor={PRIMARY_COLOR}
                 autoCorrect={false}
@@ -171,11 +177,17 @@ export default function LoginScreen({ navigation }) {
               <TextInput
                 placeholder="Contraseña"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  // validación en tiempo real
+                  validateField('password', text);
+                }}
+                onBlur={() => validateField('password', password)}
                 secureTextEntry={!showPassword}
                 style={styles.input}
                 placeholderTextColor="#888"
                 selectionColor={PRIMARY_COLOR}
+                maxLength={20}
                 autoCorrect={false}
                 underlineColorAndroid="transparent"
               />
