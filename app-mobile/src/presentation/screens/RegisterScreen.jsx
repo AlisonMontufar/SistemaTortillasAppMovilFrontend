@@ -10,19 +10,17 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-// NOTA: Se asume que 'expo-linear-gradient', 'react-native-safe-area-context' y 'react-native-keyboard-aware-scroll-view' están instalados.
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
+import Toast from 'react-native-toast-message'; //Mensaje global
 
 import UserRepositoryImpl from '../../infrastructure/repositories/UserRepositoryImpl';
 import RegisterUseCase from '../../application/useCases/RegisterUseCase';
-
-import Toast from 'react-native-toast-message'; //Mensaje global
-
-// --- Importación del Hook de Validación ---
 import { useRegisterValidation } from '../../application/hooks/useRegisterValidation'; 
+
 
 // --- CONSTANTES DE DISEÑO (Iguales al LoginScreen) ---
 const PRIMARY_COLOR = '#EC9D02'; // Naranja Principal
@@ -34,10 +32,10 @@ export default function RegisterScreen({ navigation }) {
     const insets = useSafeAreaInsets(); 
 
     // 9 Campos de estado + Error de API
-    const [nombreUsuario, setNombreUsuario] = useState('');
     const [nombre, setNombre] = useState('');
     const [apellidoP, setApellidoP] = useState('');
     const [apellidoM, setApellidoM] = useState('');
+    const [nombreUsuario, setNombreUsuario] = useState('');
     const [correoUsuario, setCorreoUsuario] = useState('');
     const [contrasenaUsuario, setContrasenaUsuario] = useState('');
     const [confirmarContrasena, setConfirmarContrasena] = useState('');
@@ -53,22 +51,23 @@ export default function RegisterScreen({ navigation }) {
 
     // --- Uso del Hook de Validación ---
     const { 
-        nombreUsuarioError,
         nombreError,
         apellidoPError,
         apellidoMError,
+        nombreUsuarioError,
         correoUsuarioError,
         contrasenaUsuarioError,
         confirmarContrasenaError,
         telefonoUsuarioError,
         placasVehiculoError,
+        validateField,
         validateFields, 
         resetErrors 
     } = useRegisterValidation(
-        nombreUsuario,
         nombre,
         apellidoP,
         apellidoM,
+        nombreUsuario,
         correoUsuario,
         contrasenaUsuario,
         confirmarContrasena,
@@ -98,7 +97,7 @@ export default function RegisterScreen({ navigation }) {
                   Toast.show({
                     type: 'success',
                     text1: 'Registro exitoso 🎉',
-                    text2: message,
+                    text2: /*message*/ 'Ya eres uno de nosotros!',
                     position: 'top',
                   });
             
@@ -110,7 +109,7 @@ export default function RegisterScreen({ navigation }) {
                   Toast.show({
                     type: 'error',
                     text1: 'Error al intentar registrar la cuenta',
-                    text2: e.message || 'Intenta nuevamente',
+                    text2: /*e.message ||*/ 'Intenta nuevamente',
                     position: 'top',
                   });
 
@@ -124,83 +123,6 @@ export default function RegisterScreen({ navigation }) {
         borderColor: error ? ERROR_COLOR : '#eee',
         borderWidth: error ? 2 : 1, 
     });
-
-    // Función de ayuda para renderizar un campo de input con su lógica de error
-    const renderInput = ({
-        label,
-        value,
-        setter,
-        error,
-        icon,
-        isPassword = false,
-        keyboardType = 'default',
-        autoCapitalize = 'words',
-        showPass, 
-        togglePass,
-        style = {}
-    }) => (
-        <View key={label} style={style}>
-            <View 
-                style={[
-                    styles.inputGroup, 
-                    getInputBorderStyle(error),
-                ]}
-            >
-                <MaterialCommunityIcons
-                    name={icon}
-                    size={20}
-                    color={error ? ERROR_COLOR : '#888'} 
-                    style={styles.icon}
-                />
-                <TextInput
-                    placeholder={label}
-                    value={value}
-                    onChangeText={setter}
-                    secureTextEntry={isPassword ? !showPass : false}
-                    style={styles.input}
-                    placeholderTextColor="#888"
-                    keyboardType={keyboardType}
-                    autoCapitalize={autoCapitalize}
-                    selectionColor={PRIMARY_COLOR}
-                    autoCorrect={false}
-                    underlineColorAndroid="transparent"
-                />
-                {isPassword && (
-                    <TouchableOpacity
-                        onPress={togglePass}
-                        style={styles.passwordToggle}
-                    >
-                        <Ionicons
-                            name={showPass ? 'eye-off-outline' : 'eye-outline'}
-                            size={20}
-                            color={error ? ERROR_COLOR : '#888'}
-                        />
-                    </TouchableOpacity>
-                )}
-            </View>
-            {error ? <Text style={styles.validationErrorText}>{error}</Text> : null}
-        </View>
-    );
-
-    // Campos a renderizar en orden
-    const inputFields = [
-        { label: "Nombre", value: nombre, setter: setNombre, error: nombreError, icon: "account" },
-        { label: "Apellido Paterno", value: apellidoP, setter: setApellidoP, error: apellidoPError, icon: "account-details" },
-        { label: "Apellido Materno", value: apellidoM, setter: setApellidoM, error: apellidoMError, icon: "account-details-outline", autoCapitalize: 'words' },
-        { label: "Nombre de Usuario", value: nombreUsuario, setter: setNombreUsuario, error: nombreUsuarioError, icon: "account-circle", autoCapitalize: 'none' },
-        { label: "Teléfono", value: telefonoUsuario, setter: setTelefonoUsuario, error: telefonoUsuarioError, icon: "phone", keyboardType: 'phone-pad', autoCapitalize: 'none' },
-        { label: "Correo Electrónico", value: correoUsuario, setter: setCorreoUsuario, error: correoUsuarioError, icon: "email", keyboardType: 'email-address', autoCapitalize: 'none' },
-        { 
-            label: "Contraseña", value: contrasenaUsuario, setter: setContrasenaUsuario, error: contrasenaUsuarioError, icon: "lock-outline", 
-            isPassword: true, showPass: showPassword, togglePass: () => setShowPassword(!showPassword), autoCapitalize: 'none' 
-        },
-        { 
-            label: "Confirmar Contraseña", value: confirmarContrasena, setter: setConfirmarContrasena, error: confirmarContrasenaError, icon: "lock-check", 
-            isPassword: true, showPass: showConfirmPassword, togglePass: () => setShowConfirmPassword(!showConfirmPassword), autoCapitalize: 'none' 
-        },
-        { label: "Placas del Vehículo", value: placasVehiculo, setter: setPlacasVehiculo, error: placasVehiculoError, icon: "car-info", autoCapitalize: 'characters' },
-    ];
-
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -230,15 +152,357 @@ export default function RegisterScreen({ navigation }) {
                             Completa el formulario con tus datos
                         </Text>
                         
-                        {/* Renderizar todos los campos */}
-                        {inputFields.map((field, index) => renderInput({ 
-                            ...field, 
-                            style: {width: '100%', marginTop: index === 0 ? 0 : 10 } 
-                        }))}
+                        {/* Campo Nombre */}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(nombreError),
+                            { marginTop: nombreError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="account"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={nombreError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Nombre"
+                            value={nombre}
+                            onChangeText={(text) => {
+                              setNombre(text);
+                              // validación en tiempo real
+                              validateField('nombre', text);
+                            }}
+                            onBlur={() => validateField('nombre', nombre)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación de Usuario */}
+                        {nombreError ? <Text style={styles.validationErrorText}>{nombreError}</Text> : null}
+                        
+                        {/* Campo apellidoP */}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(apellidoPError),
+                            { marginTop: apellidoPError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="account-details"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={apellidoPError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Apellido Paterno"
+                            value={apellidoP}
+                            onChangeText={(text) => {
+                              setApellidoP(text);
+                              // validación en tiempo real
+                              validateField('apellidoP', text);
+                            }}
+                            onBlur={() => validateField('apellidoP', apellidoP)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación de Apellido Paterno */}
+                        {apellidoPError ? <Text style={styles.validationErrorText}>{apellidoPError}</Text> : null}
+                        
+                        {/* Campo apellidoM */}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(apellidoMError),
+                            { marginTop: apellidoMError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="account-details-outline"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={apellidoMError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Apellido Materno"
+                            value={apellidoM}
+                            onChangeText={(text) => {
+                              setApellidoM(text);
+                              // validación en tiempo real
+                              validateField('apellidoM', text);
+                            }}
+                            onBlur={() => validateField('apellidoM', apellidoM)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación de Apellido Materno */}
+                        {apellidoMError ? <Text style={styles.validationErrorText}>{apellidoMError}</Text> : null}
+                        
+                        {/* Campo nombreUsuario*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(nombreUsuarioError),
+                            { marginTop: nombreUsuarioError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="account-circle"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={nombreUsuarioError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Nombre de Usuario"
+                            value={nombreUsuario}
+                            onChangeText={(text) => {
+                              setNombreUsuario(text);
+                              // validación en tiempo real
+                              validateField('nombreUsuario', text);
+                            }}
+                            onBlur={() => validateField('nombreUsuario', nombreUsuario)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {nombreUsuarioError ? <Text style={styles.validationErrorText}>{nombreUsuarioError}</Text> : null}
+                        
+                        {/* Campo correoUsuario*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(correoUsuarioError),
+                            { marginTop: correoUsuarioError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="email"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={correoUsuarioError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Correo del Usuario"
+                            value={correoUsuario}
+                            onChangeText={(text) => {
+                              setCorreoUsuario(text);
+                              // validación en tiempo real
+                              validateField('correoUsuario', text);
+                            }}
+                            onBlur={() => validateField('correoUsuario', correoUsuario)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={50}
+                            keyboardType='email-address'
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {correoUsuarioError ? <Text style={styles.validationErrorText}>{correoUsuarioError}</Text> : null}
+
+                        {/* Campo contrasenaUsuario*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(contrasenaUsuarioError),
+                            { marginTop: contrasenaUsuarioError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="lock-outline"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={contrasenaUsuarioError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Contraseña"
+                            value={contrasenaUsuario}
+                            onChangeText={(text) => {
+                              setContrasenaUsuario(text);
+                              // validación en tiempo real
+                              validateField('contrasenaUsuario', text);
+                            }}
+                            onBlur={() => validateField('contrasenaUsuario', contrasenaUsuario)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                            secureTextEntry={!showPassword} // 🔑 alterna entre mostrar/ocultar
+                          />
+                           {/* Botón para mostrar/ocultar */}
+                        <TouchableOpacity
+                          onPress={() => setShowPassword(!showPassword)}
+                          style={styles.iconToggle}
+                        >
+                          <MaterialCommunityIcons
+                            name={showPassword ? "eye-off-outline" : "eye-outline"}
+                            size={20}
+                            color="#888"
+                          />
+                        </TouchableOpacity>
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {contrasenaUsuarioError ? <Text style={styles.validationErrorText}>{contrasenaUsuarioError}</Text> : null}
+                        
+                        {/* Campo confirmarContrasena*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(confirmarContrasenaError),
+                            { marginTop: confirmarContrasenaError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="lock-check"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={confirmarContrasenaError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Confirmar Contraseña"
+                            value={confirmarContrasena}
+                            onChangeText={(text) => {
+                              setConfirmarContrasena(text);
+                              // validación en tiempo real
+                              validateField('confirmarContrasena', text);
+                            }}
+                            onBlur={() => validateField('confirmarContrasena', confirmarContrasena)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={20}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                            secureTextEntry={!showConfirmPassword} // 🔑 alterna entre mostrar/ocultar
+                          />
+                            <TouchableOpacity
+                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={styles.iconToggle}
+                            >
+                                <MaterialCommunityIcons
+                                    name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                                    size={20}
+                                    color="#888"
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {confirmarContrasenaError ? <Text style={styles.validationErrorText}>{confirmarContrasenaError}</Text> : null}
+                        
+                        {/* Campo telefonoUsuario*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(telefonoUsuarioError),
+                            { marginTop: telefonoUsuarioError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="phone"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={telefonoUsuarioError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Numero de Telefono"
+                            value={telefonoUsuario}
+                            onChangeText={(text) => {
+                              setTelefonoUsuario(text);
+                              // validación en tiempo real
+                              validateField('telefonoUsuario', text);
+                            }}
+                            onBlur={() => validateField('telefonoUsuario', telefonoUsuario)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            keyboardType="phone-pad" // 👈 Esto abre un teclado numérico con símbolos de teléfono
+                            maxLength={10}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {telefonoUsuarioError ? <Text style={styles.validationErrorText}>{telefonoUsuarioError}</Text> : null}
+                        
+                        {/* Campo placasVehiculo*/}
+                        <View 
+                          style={[
+                            styles.inputGroup, 
+                            getInputBorderStyle(placasVehiculoError),
+                            { marginTop: placasVehiculoError ? 5 : 20 } 
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="car-info"
+                            size={20}
+                            // Cambia el color del ícono si hay error
+                            color={placasVehiculoError ? ERROR_COLOR : '#888'} 
+                            style={styles.icon}
+                          />
+                          <TextInput
+                            placeholder="Placas del Vehiculo"
+                            value={placasVehiculo}
+                            onChangeText={(text) => {
+                              setPlacasVehiculo(text);
+                              // validación en tiempo real
+                              validateField('placasVehiculo', text);
+                            }}
+                            onBlur={() => validateField('placasVehiculo', placasVehiculo)}
+                            style={styles.input}
+                            placeholderTextColor="#888"
+                            maxLength={7}
+                            autoCapitalize="none"
+                            selectionColor={PRIMARY_COLOR}
+                            autoCorrect={false}
+                            underlineColorAndroid="transparent"
+                          />
+                        </View>
+                        {/* Mostrar Error de Validación del Nombre de Usuario */}
+                        {placasVehiculoError ? <Text style={styles.validationErrorText}>{placasVehiculoError}</Text> : null}
 
                         {/* Error de API/Lógica de Negocio (Global) */}
                         {/*apiError ? <Text style={[styles.errorText, {color: apiError.includes('exitoso') ? PRIMARY_COLOR : ERROR_COLOR}]}>{apiError}</Text> : null*/}
-
 
                         {/* Botón de Registro */}
                         <TouchableOpacity
@@ -277,9 +541,10 @@ export default function RegisterScreen({ navigation }) {
     );
 }
 
-// ---
-// ## ESTILOS (Adaptados de LoginScreen para consistencia)
-// ---
+/////////////////////////////////////////////////////////////
+// ## ESTILOS (Adaptados de LoginScreen para consistencia) //
+/////////////////////////////////////////////////////////////
+
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
