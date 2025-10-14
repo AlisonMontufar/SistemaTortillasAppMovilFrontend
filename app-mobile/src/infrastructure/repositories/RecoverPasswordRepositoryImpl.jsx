@@ -3,21 +3,24 @@ import RecoverPasswordRepository from "../../domain/repositories/RecoverPassword
 export default class RecoverPasswordRepositoryImpl extends RecoverPasswordRepository {
   constructor() {
     super();
-    this.apiSendCodeBaseUrl = 'http://192.168.137.57:5149/api/v1/Auth/send-recovery-code';
-    this.apiVerifyCodeBaseUrl = 'http://192.168.137.57:5149/api/v1/Auth/verify-recovery-code';
-    this.apiResetPasswordBaseUrl = 'http://192.168.137.57:5149/api/v1/Auth/reset-password';
+    this.apiSendNotificationBaseUrl = 'http://localhost:5149/api/v1/Notification/send';
+    this.apiVerifyCodeBaseUrl = 'http://localhost:5149/api/v1/Auth/verify-recovery-code';
+    this.apiResetPasswordBaseUrl = 'http://localhost:5149/api/v1/Auth/reset-password';
   }
 
   async sendRecoveryCode(email) {
     try {
-      const response = await fetch(this.apiSendCodeBaseUrl, {
+      const response = await fetch(this.apiSendNotificationBaseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({
+          email,
+          type: 'PasswordRecovery'
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al enviar el código de recuperación');
+        throw new Error('Error al enviar la notificación');
       }
 
       return await response.json();
@@ -25,6 +28,28 @@ export default class RecoverPasswordRepositoryImpl extends RecoverPasswordReposi
       throw new Error(error.message || 'Error de conexión con la API');
     }
   }
+
+    async sendPasswordResetConfirmation(email) {
+    try {
+      const response = await fetch(this.apiSendNotificationBaseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          type: 'PasswordResetConfirmation'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar la notificación');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Error de conexión con la API');
+    }
+  }
+
 
   async verifyRecoveryCode(email, code) {
     try {

@@ -19,6 +19,7 @@ import SendRecoveryCodeUseCase from '../../application/useCases/SendRecoveryCode
 import VerifyRecoveryCodeUseCase from '../../application/useCases/VerifyRecoveryCodeUseCase';
 import ResetPasswordUseCase from '../../application/useCases/ResetPasswordUseCase';
 import { useRecoverPasswordValidation } from '../../application/hooks/useRecoverPasswordValidation';
+import SendConfirmationEmailUseCase from '../../application/useCases/SendConfirmationEmailUseCase';
 
 const PRIMARY_COLOR = '#EC9D02';
 const ERROR_COLOR = '#D9534F';
@@ -47,7 +48,10 @@ export default function RecoverPasswordScreen({ navigation }) {
     resetErrors,
   } = useRecoverPasswordValidation(email, code, newPassword, confirmPassword);
 
+
   const repository = new RecoverPasswordRepositoryImpl();
+  
+const sendConfirmationEmailUseCase = new SendConfirmationEmailUseCase(repository);
   const sendCodeUseCase = new SendRecoveryCodeUseCase(repository);
   const verifyCodeUseCase = new VerifyRecoveryCodeUseCase(repository);
   const resetPasswordUseCase = new ResetPasswordUseCase(repository);
@@ -103,33 +107,37 @@ export default function RecoverPasswordScreen({ navigation }) {
       setLoading(false);
     }
   };
+const handleResetPassword = async () => {
+  resetErrors();
+  if (!validateEmail() || !validatePasswords()) return;
 
-  const handleResetPassword = async () => {
-    resetErrors();
-    if (!validateEmail() || !validatePasswords()) return;
+  setLoading(true);
+  try {
+  
+    await resetPasswordUseCase.execute(email, newPassword, confirmPassword);
 
-    setLoading(true);
-    try {
-      await resetPasswordUseCase.execute(email, newPassword, confirmPassword);
-      Toast.show({
-        type: 'success',
-        text1: 'Contraseña restablecida',
-        text2: 'Ahora puedes iniciar sesión',
-        position: 'top',
-      });
-      navigation.navigate('Login');
-    } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: e.message || 'Intenta nuevamente',
-        position: 'top',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    await sendConfirmationEmailUseCase.execute(email);
 
+ 
+    Toast.show({
+      type: 'success',
+      text1: 'Contraseña restablecida',
+      text2: 'Se ha enviado un correo de confirmación',
+      position: 'top',
+    });
+
+    navigation.navigate('Login');
+  } catch (e) {
+    Toast.show({
+      type: 'error',
+      text1: 'Error',
+      text2: e.message || 'Intenta nuevamente',
+      position: 'top',
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   const getInputBorderStyle = (error) => ({
     borderColor: error ? ERROR_COLOR : '#eee',
     borderWidth: error ? 2 : 1,
