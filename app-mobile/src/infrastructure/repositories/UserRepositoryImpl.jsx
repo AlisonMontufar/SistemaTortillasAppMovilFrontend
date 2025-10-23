@@ -4,18 +4,18 @@ import User from '../../domain/entities/User';
 export default class UserRepositoryImpl extends UserRepository {
   constructor() {
     super();
-    this.apiLoginBaseUrl = 'http://192.168.100.10:5149/api/v1/Auth/login';
-    this.apiRegisterBaseUrl = 'http://192.168.100.10:5149/api/v1/Auth/register';
+    this.apiLoginBaseUrl = 'http://10.163.54.100:5149/api/v1/Auth/login';
+    this.apiRegisterBaseUrl = 'http://10.163.54.100:5149/api/v1/Auth/register';
   }
 
-  async login(nombreUsuario, contrasenaUsuario) {
+  async login(  Identificador, contrasenaUsuario) {
     try {
       const response = await fetch(`${this.apiLoginBaseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ nombreUsuario, contrasenaUsuario }),
+        body: JSON.stringify({ Identificador, contrasenaUsuario }),
       });
 
       if (!response.ok) {
@@ -44,7 +44,7 @@ export default class UserRepositoryImpl extends UserRepository {
           apellidoP, 
           apellidoM, 
           correoUsuario, 
-          contrasenaUsuario, 
+          contrasenaUsuario,
           telefonoUsuario, 
           placasVehiculo }),
       });
