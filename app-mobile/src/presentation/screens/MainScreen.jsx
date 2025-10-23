@@ -44,7 +44,7 @@ export default function MainScreen({ navigation }) {
             labelStyle={styles.outlinedLabel}
             contentStyle={styles.getStartedButtonContent}
           >
-            Get In
+            Inicar Sesion
           </Button>
 
           {/* Botón "Get Started" (sólido blanco) */}
@@ -55,7 +55,7 @@ export default function MainScreen({ navigation }) {
             labelStyle={styles.filledLabel}
             contentStyle={styles.getStartedButtonContent}
           >
-            Get Started
+            Comenzar Registro
           </Button>
         </View>
       </LinearGradient>
