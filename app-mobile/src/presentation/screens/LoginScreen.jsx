@@ -137,7 +137,7 @@ export default function LoginScreen({ navigation }) {
                 style={styles.icon}
               />
               <TextInput
-                placeholder="Usuario"
+                placeholder="Correo o usuario"
                 value={username}
                 onChangeText={(text) => {
                   setUsername(text);
