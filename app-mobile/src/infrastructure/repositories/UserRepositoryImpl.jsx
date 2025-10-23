@@ -45,6 +45,9 @@ export default class UserRepositoryImpl extends UserRepository {
           apellidoM, 
           correoUsuario, 
           contrasenaUsuario,
+          rol : 3,
+          empresa : null,
+          estatus: 1,
           telefonoUsuario, 
           placasVehiculo }),
       });
