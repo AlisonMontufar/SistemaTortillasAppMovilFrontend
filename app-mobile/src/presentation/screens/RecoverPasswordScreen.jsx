@@ -18,8 +18,8 @@ import RecoverPasswordRepositoryImpl from '../../infrastructure/repositories/Rec
 import SendRecoveryCodeUseCase from '../../application/useCases/SendRecoveryCodeUseCase';
 import VerifyRecoveryCodeUseCase from '../../application/useCases/VerifyRecoveryCodeUseCase';
 import ResetPasswordUseCase from '../../application/useCases/ResetPasswordUseCase';
-import { useRecoverPasswordValidation } from '../../application/hooks/useRecoverPasswordValidation';
 import SendConfirmationEmailUseCase from '../../application/useCases/SendConfirmationEmailUseCase';
+import { useRecoverPasswordValidation } from '../../application/hooks/useRecoverPasswordValidation';
 
 const PRIMARY_COLOR = '#EC9D02';
 const ERROR_COLOR = '#D9534F';
@@ -42,23 +42,21 @@ export default function RecoverPasswordScreen({ navigation }) {
     codeError,
     passwordError,
     confirmPasswordError,
-    validateEmail,
-    validateCode,
-    validatePasswords,
+    validateFields,
+    validateField,
     resetErrors,
   } = useRecoverPasswordValidation(email, code, newPassword, confirmPassword);
 
-
   const repository = new RecoverPasswordRepositoryImpl();
-  
-const sendConfirmationEmailUseCase = new SendConfirmationEmailUseCase(repository);
+  const sendConfirmationEmailUseCase = new SendConfirmationEmailUseCase(repository);
   const sendCodeUseCase = new SendRecoveryCodeUseCase(repository);
   const verifyCodeUseCase = new VerifyRecoveryCodeUseCase(repository);
   const resetPasswordUseCase = new ResetPasswordUseCase(repository);
 
+  // --- Handlers ---
   const handleSendCode = async () => {
     resetErrors();
-    if (!validateEmail()) return;
+      if (!validateField('email', email)) return; // solo valida email
 
     setLoading(true);
     try {
@@ -84,7 +82,7 @@ const sendConfirmationEmailUseCase = new SendConfirmationEmailUseCase(repository
 
   const handleVerifyCode = async () => {
     resetErrors();
-    if (!validateEmail() || !validateCode()) return;
+  if (!validateField('email', email) || !validateField('code', code)) return;
 
     setLoading(true);
     try {
@@ -107,42 +105,42 @@ const sendConfirmationEmailUseCase = new SendConfirmationEmailUseCase(repository
       setLoading(false);
     }
   };
-const handleResetPassword = async () => {
-  resetErrors();
-  if (!validateEmail() || !validatePasswords()) return;
 
-  setLoading(true);
-  try {
-  
-    await resetPasswordUseCase.execute(email, newPassword, confirmPassword);
+  const handleResetPassword = async () => {
+    resetErrors();
+    if (!validateField('email', email) || !validateField('newPassword', newPassword) || !validateField('confirmPassword', confirmPassword)) return;
 
-    await sendConfirmationEmailUseCase.execute(email);
+    setLoading(true);
+    try {
+      await resetPasswordUseCase.execute(email, newPassword, confirmPassword);
+      await sendConfirmationEmailUseCase.execute(email);
 
- 
-    Toast.show({
-      type: 'success',
-      text1: 'Contraseña restablecida',
-      text2: 'Se ha enviado un correo de confirmación',
-      position: 'top',
-    });
+      Toast.show({
+        type: 'success',
+        text1: 'Contraseña restablecida',
+        text2: 'Se ha enviado un correo de confirmación',
+        position: 'top',
+      });
 
-    navigation.navigate('Login');
-  } catch (e) {
-    Toast.show({
-      type: 'error',
-      text1: 'Error',
-      text2: e.message || 'Intenta nuevamente',
-      position: 'top',
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      navigation.navigate('Login');
+    } catch (e) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: e.message || 'Intenta nuevamente',
+        position: 'top',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getInputBorderStyle = (error) => ({
     borderColor: error ? ERROR_COLOR : '#eee',
     borderWidth: error ? 2 : 1,
   });
 
+  // --- Render Step ---
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -158,7 +156,10 @@ const handleResetPassword = async () => {
               <TextInput
                 placeholder="Correo electrónico"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  validateField('email', text);
+                }}
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -186,7 +187,10 @@ const handleResetPassword = async () => {
               <TextInput
                 placeholder="Código de verificación"
                 value={code}
-                onChangeText={setCode}
+                onChangeText={(text) => {
+                  setCode(text);
+                  validateField('code', text);
+                }}
                 style={styles.input}
                 keyboardType="numeric"
               />
@@ -212,7 +216,10 @@ const handleResetPassword = async () => {
               <TextInput
                 placeholder="Nueva contraseña"
                 value={newPassword}
-                onChangeText={setNewPassword}
+                onChangeText={(text) => {
+                  setNewPassword(text);
+                  validateField('newPassword', text);
+                }}
                 style={styles.input}
                 secureTextEntry={!showPassword}
                 selectionColor={PRIMARY_COLOR}
@@ -237,7 +244,10 @@ const handleResetPassword = async () => {
               <TextInput
                 placeholder="Confirmar contraseña"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  validateField('confirmPassword', text);
+                }}
                 style={styles.input}
                 secureTextEntry={!showPassword}
                 selectionColor={PRIMARY_COLOR}
