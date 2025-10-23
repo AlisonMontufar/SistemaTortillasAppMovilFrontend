@@ -171,7 +171,9 @@ export default function RegisterScreen({ navigation }) {
                             placeholder="Nombre"
                             value={nombre}
                             onChangeText={(text) => {
-                              setNombre(text);
+                              // 1. **Filtra**: Elimina cualquier dígito (0-9 y permite algunos signos) de la entrada.
+                              const filteredText = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s.,;:\-¿?!¡']/g, '');
+                              setNombre(filteredText);
                               // validación en tiempo real
                               validateField('nombre', text);
                             }}
@@ -207,7 +209,9 @@ export default function RegisterScreen({ navigation }) {
                             placeholder="Apellido Paterno"
                             value={apellidoP}
                             onChangeText={(text) => {
-                              setApellidoP(text);
+                              // 1. **Filtra**: Elimina cualquier dígito (0-9 y permite algunos signos) de la entrada.
+                              const filteredText = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s.,;:\-¿?!¡']/g, '');
+                              setApellidoP(filteredText);
                               // validación en tiempo real
                               validateField('apellidoP', text);
                             }}
@@ -243,7 +247,9 @@ export default function RegisterScreen({ navigation }) {
                             placeholder="Apellido Materno"
                             value={apellidoM}
                             onChangeText={(text) => {
-                              setApellidoM(text);
+                              // 1. **Filtra**: Elimina cualquier dígito (0-9 y permite algunos signos) de la entrada.
+                              const filteredText = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s.,;:\-¿?!¡']/g, '');
+                              setApellidoM(filteredText);
                               // validación en tiempo real
                               validateField('apellidoM', text);
                             }}
