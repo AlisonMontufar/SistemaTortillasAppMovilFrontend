@@ -64,15 +64,15 @@ export default function LoginScreen({ navigation }) {
     try {
       const user = await useCase.execute(username, password);
       
+      
       // ✅ Toast de éxito
       Toast.show({
         type: 'success',
         text1: 'Inicio de sesión exitoso 🎉',
-        text2: `Bienvenido ${user.Username || 'usuario'}`,
+        text2: `Bienvenido ${user.Username}`,
         position: 'top',
       });
-
-      navigation.navigate('Home', { user });
+      navigation.navigate('MainContainer', { user });
     } catch (e) {
 
       // ❌ Toast de error
