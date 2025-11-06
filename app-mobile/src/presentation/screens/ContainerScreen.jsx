@@ -5,24 +5,11 @@ import BottomNavBar from '../components/BottomNavBar';
 import HomeScreen from '../screens/HomeScreen';
 //import OrdersScreen from '../screens/OrdersScreen';
 //import ProfileScreen from '../screens/ProfileScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-export default function ContainerScreen({route}) {
+export default function ContainerScreen() {
   
   const insets = useSafeAreaInsets();
   const [currentTab, setCurrentTab] = useState('Home'); // Estado de pantalla actual
-  
-  const saveUserToStorage = async (user) => {
-    try {
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      console.log('Usuario guardado en AsyncStorage');
-    } catch (error) {
-      console.error('Error guardando usuario:', error);
-    }
-  };
-  const { user } = route.params; // <-- Aquí extraes el user
-  saveUserToStorage(user);
 
   // Función para renderizar la pantalla según el tab
   const renderScreen = () => {

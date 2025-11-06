@@ -15,6 +15,8 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
 import Toast from 'react-native-toast-message'; //Mensaje global
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // --- Importación del Hook de Validación ---
 import { useLoginValidation } from '../../application/hooks/useLoginValidation'; 
@@ -64,6 +66,7 @@ export default function LoginScreen({ navigation }) {
     try {
       const user = await useCase.execute(username, password);
       
+      await AsyncStorage.setItem('user', JSON.stringify(user));
       
       // ✅ Toast de éxito
       Toast.show({
@@ -72,7 +75,7 @@ export default function LoginScreen({ navigation }) {
         text2: `Bienvenido ${user.Username}`,
         position: 'top',
       });
-      navigation.navigate('MainContainer', { user });
+      navigation.navigate('MainContainer');
     } catch (e) {
 
       // ❌ Toast de error
