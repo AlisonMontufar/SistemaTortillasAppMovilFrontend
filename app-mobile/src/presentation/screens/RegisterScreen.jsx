@@ -527,7 +527,7 @@ export default function RegisterScreen({ navigation }) {
                         <View
                             style={[
                                 styles.loginFooter, 
-                                { paddingBottom: insets.bottom + 10 },
+                                { paddingBottom: insets.bottom + 20},
                             ]}
                         >
                             <Text style={styles.loginText}>
@@ -585,7 +585,6 @@ const styles = StyleSheet.create({
     cardContentContainer: {
         flexGrow: 1, 
         alignItems: 'center',
-        paddingBottom: 40, 
     },
     cardContent: {
         width: '90%',

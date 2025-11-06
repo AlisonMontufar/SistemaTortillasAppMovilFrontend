@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default class UserRepositoryImpl extends UserRepository {
   constructor() {
     super();
-    this.apiLoginBaseUrl = 'http://192.168.100.10:5149/api/v1/Auth/login';
-    this.apiRegisterBaseUrl = 'http://10.163.54.100:5149/api/v1/Auth/register';
+    this.apiLoginBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/login';
+    this.apiRegisterBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/register';
   }
 
   async login(  Identificador, contrasenaUsuario) {
