@@ -3,9 +3,9 @@ import RecoverPasswordRepository from "../../domain/repositories/RecoverPassword
 export default class RecoverPasswordRepositoryImpl extends RecoverPasswordRepository {
   constructor() {
     super();
-    this.apiSendNotificationBaseUrl = 'http://localhost:5149/api/v1/Notification/send';
-    this.apiVerifyCodeBaseUrl = 'http://localhost:5149/api/v1/Auth/verify-recovery-code';
-    this.apiResetPasswordBaseUrl = 'http://localhost:5149/api/v1/Auth/reset-password';
+    this.apiSendNotificationBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Notification/send';
+    this.apiVerifyCodeBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/verify-recovery-code';
+    this.apiResetPasswordBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/reset-password';
   }
 
   async sendRecoveryCode(email) {

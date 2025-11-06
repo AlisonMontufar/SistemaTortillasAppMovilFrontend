@@ -64,15 +64,15 @@ export default function LoginScreen({ navigation }) {
     try {
       const user = await useCase.execute(username, password);
       
+      
       // ✅ Toast de éxito
       Toast.show({
         type: 'success',
         text1: 'Inicio de sesión exitoso 🎉',
-        text2: `Bienvenido ${user.Username || 'usuario'}`,
+        text2: `Bienvenido ${user.Username}`,
         position: 'top',
       });
-
-      navigation.navigate('Home', { user });
+      navigation.navigate('MainContainer', { user });
     } catch (e) {
 
       // ❌ Toast de error
@@ -239,7 +239,7 @@ export default function LoginScreen({ navigation }) {
             <View
               style={[
                 styles.registerFooter,
-                { paddingBottom: insets.bottom + 10 },
+                { paddingBottom: insets.bottom + 20},
               ]}
             >
               <Text style={styles.registerText}>
@@ -296,7 +296,6 @@ const styles = StyleSheet.create({
   cardContentContainer: {
     flexGrow: 1, 
     alignItems: 'center',
-    paddingBottom: 20, 
   },
   cardContent: {
     width: '90%',

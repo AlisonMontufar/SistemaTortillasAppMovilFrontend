@@ -1,11 +1,13 @@
 import UserRepository from '../../domain/repositories/UserRepository';
 import User from '../../domain/entities/User';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default class UserRepositoryImpl extends UserRepository {
   constructor() {
     super();
-    this.apiLoginBaseUrl = 'http://10.163.54.100:5149/api/v1/Auth/login';
-    this.apiRegisterBaseUrl = 'http://10.163.54.100:5149/api/v1/Auth/register';
+    this.apiLoginBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/login';
+    this.apiRegisterBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Auth/register';
   }
 
   async login(  Identificador, contrasenaUsuario) {
@@ -26,7 +28,7 @@ export default class UserRepositoryImpl extends UserRepository {
 
       // data debería tener { id, name, email } según tu API
       console.log(data);
-      return new User(data.Username, data.RoleId, data.Token, data.ExpiresAt);
+      return new User(data.username, data.roleId, data.token, data.expiresAt);
     } catch (error) {
       throw new Error(error.message || 'Error al conectar con la API');
     }
