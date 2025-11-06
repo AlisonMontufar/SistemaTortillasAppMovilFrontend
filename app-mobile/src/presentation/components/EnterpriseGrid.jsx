@@ -9,9 +9,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
+import Toast from 'react-native-toast-message'; // 👈 ya existe globalmente
 import HomeUseCase from '../../application/useCases/HomeUseCase';
 import HomeRepositoryImpl from '../../infrastructure/repositories/HomeRepositoryImpl';
-import OrdersList from './OrdersList'; // 👈 nuevo import
+import OrdersList from './OrdersList';
 
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 30;
@@ -19,8 +20,7 @@ const CARD_SPACING = 30;
 const CARD_WIDTH = (width - GRID_PADDING * 2 - CARD_SPACING) / 2;
 
 const EnterpriseCard = React.memo(({ item, onPress }) => {
-  const pedidosText = `${item.numeroPedidos} Pedido${item.numeroPedidos !== 1 ? 's' : ''} pendiente${item.numeroPedidos !== 1 ? 's' : ''}`;
-
+  const pedidosText = `${item.numeroPedidos} Pedido${item.numeroPedidos !== 1 ? 's' : ''}`;
   return (
     <TouchableOpacity
       style={styles.card}
@@ -41,35 +41,41 @@ const EnterpriseCard = React.memo(({ item, onPress }) => {
 export default function EnterpriseGrid() {
   const [enterprises, setEnterprises] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedEnterprise, setSelectedEnterprise] = useState(null); // 👈 para ver pedidos
+  const [selectedEnterprise, setSelectedEnterprise] = useState(null);
 
   useEffect(() => {
     const fetchEnterprises = async () => {
       setLoading(true);
-      setError(null);
       try {
         const useCase = new HomeUseCase(new HomeRepositoryImpl());
         const apiData = await useCase.execute();
         setEnterprises(apiData);
       } catch (e) {
         console.error('Error al obtener las empresas:', e);
-        setError('No se pudieron cargar los clientes. Inténtalo de nuevo.');
+        // 👇 Mostrar Toast elegante en lugar de texto feo
+        Toast.show({
+          type: 'error',
+          text1: 'Error al cargar clientes',
+          text2: e.message || 'Intenta nuevamente.',
+          position: 'top',
+        });
       } finally {
         setLoading(false);
       }
     };
+
     fetchEnterprises();
   }, []);
 
   const handlePressCard = (enterprise) => {
-    setSelectedEnterprise(enterprise); // 👈 renderiza la lista de pedidos
+    setSelectedEnterprise(enterprise);
   };
 
   const handleBack = () => {
-    setSelectedEnterprise(null); // 👈 regresa al grid
+    setSelectedEnterprise(null);
   };
 
+  // 🔄 Vista de pedidos
   if (selectedEnterprise) {
     return (
       <OrdersList
@@ -79,34 +85,31 @@ export default function EnterpriseGrid() {
     );
   }
 
+  // 🔄 Indicador de carga
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#FF9800" />
-        <Text style={styles.loaderText}>Cargando clientes...</Text>
       </View>
     );
   }
 
-  if (error && enterprises.length === 0) {
+  // ⚠️ Si no hay empresas
+  if (!loading && enterprises.length === 0) {
     return (
       <View style={styles.loaderContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Text style={styles.retryText}>Asegúrate de tener conexión a internet.</Text>
+        <Text style={styles.errorText}>No se encotraron Empresas.</Text>
+        <Text style={styles.retryText}>Intenta más tarde nuevamente.</Text>
       </View>
     );
   }
 
-  const renderItem = ({ item }) => <EnterpriseCard item={item} onPress={handlePressCard} />;
+  const renderItem = ({ item }) => (
+    <EnterpriseCard item={item} onPress={handlePressCard} />
+  );
 
   return (
     <View style={styles.container}>
-      {error && enterprises.length > 0 && (
-        <View style={styles.alertContainer}>
-          <Text style={styles.alertText}>⚠️ No se pudieron actualizar los datos.</Text>
-        </View>
-      )}
-
       <FlatList
         data={enterprises}
         renderItem={renderItem}
@@ -138,8 +141,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     alignItems: 'center',
-    paddingVertical: 30,
-    paddingHorizontal: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -175,13 +178,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 40,
-  },
-  loaderText: {
-    marginTop: 12,
-    color: '#666',
-    fontSize: 16,
   },
   errorText: {
     fontSize: 17,
@@ -195,18 +192,5 @@ const styles = StyleSheet.create({
     color: '#95a5a6',
     textAlign: 'center',
     lineHeight: 20,
-  },
-  alertContainer: {
-    backgroundColor: '#fff8e1',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ffe0b2',
-  },
-  alertText: {
-    textAlign: 'center',
-    color: '#e65100',
-    fontWeight: '500',
-    fontSize: 14,
   },
 });
