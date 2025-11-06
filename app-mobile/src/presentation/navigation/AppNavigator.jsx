@@ -6,6 +6,9 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import RecoverPasswordScreen from "../screens/RecoverPasswordScreen"
 import ContainerScreen from '../screens/ContainerScreen';
+import SignatureScreen from '../screens/SignatureScreen';
+import RouteMapOrderScreen from '../screens/RouteMapOrderScreen';
+import DetailsOrderScreen from '../screens/DetailsOrderScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +21,9 @@ export default function AppNavigator() {
         <Stack.Screen options={{ headerShown: false }}  name="Register" component={RegisterScreen} />
         <Stack.Screen options={{ headerShown: false }}  name="RecoverPassword" component={RecoverPasswordScreen} />
         <Stack.Screen options={{ headerShown: false }} name="MainContainer" component={ContainerScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="Signature" component={SignatureScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="RouterMapOrder" component={RouteMapOrderScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="DetailsOrder" component={DetailsOrderScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
