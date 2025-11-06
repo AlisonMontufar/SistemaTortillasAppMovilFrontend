@@ -51,11 +51,11 @@ export default function HomeScreen() {
           </View>
 
           <TouchableOpacity style={styles.iconContainer}>
-            <Ionicons name="settings-outline" size={40} color="black" />
+            <Ionicons name="settings-sharp" size={30} color="white" />
           </TouchableOpacity>
+          
         </View>
-
-        <Text style={styles.sectionTitle}>Clientes</Text>
+            <Text style={styles.sectionTitle}>Empresas clientes</Text>
       </View>
 
       {/* --- CONTENEDOR DE EMPRESAS --- */}
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: height * 0.25,
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 50,
   },
   headerCard: {
     flexDirection: 'row',
@@ -107,10 +107,11 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   sectionTitle: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
-    fontSize: 40,
+    fontSize: 30,
     marginTop: 20,
+    textAlign: 'center', // 👈 centra el texto horizontalmente
   },
   card: {
     width: '100%',
