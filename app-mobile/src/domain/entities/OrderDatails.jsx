@@ -1,7 +1,8 @@
 export default class OrderDetails {
-  constructor(idPedido, empresa, nombreEncargado, sucursal, estatusGeneral, estatusDetalle, fechaHora,
+  constructor(id, idPedido, empresa, nombreEncargado, sucursal, estatusGeneral, estatusDetalle, fechaHora,
     cantidad, total, producto, calle, numero, colonia, codigoPostal, ciudad, estado
   ) {
+    this.id = id, 
     this.idPedido = idPedido, 
     this.empresa = empresa, 
     this.nombreEncargado = nombreEncargado, 

@@ -26,7 +26,6 @@ export default function OrdersList({ enterpriseId, onBack }) {
     const initializeData = async () => {
       try {
         setLoading(true);
-        
         // Verificar si existe un pedido activo en AsyncStorage
         const storedActiveOrder = await AsyncStorage.getItem('activeOrder');
         if (storedActiveOrder) {
@@ -41,6 +40,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
         // Cargar los pedidos
         const useCase = new OrderDetailUseCase(new HomeRepositoryImpl());
         const apiData = await useCase.execute(enterpriseId);
+        console.log(apiData);
         setOrders(apiData);
       } catch (err) {
         console.error(err);
@@ -62,7 +62,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
     try {
       // Guardar el pedido activo en AsyncStorage
       const activeOrderData = {
-        idPedido: item.idPedido,
+        id: item.id,
         estatusDetalle: 'En camino',
         fechaInicio: new Date().toISOString(),
         enterpriseId: enterpriseId,
@@ -76,13 +76,13 @@ export default function OrdersList({ enterpriseId, onBack }) {
       Toast.show({
         type: 'success',
         text1: 'Viaje iniciado',
-        text2: `Pedido #${item.idPedido} está en camino`,
+        text2: `Pedido #${item.id} está en camino`,
         position: 'top',
       });
 
       //Actualiza el estatus del pedido a En camino
       const useCase = new UpdateStatusUseCase(new HomeRepositoryImpl());
-      const infoUpdate = await useCase.execute(item.idPedido, 'En camino');
+      const infoUpdate = await useCase.execute(item.id, 'En camino');
 
       console.log(infoUpdate);
 
@@ -113,7 +113,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
 
   const getButtonConfig = (item) => {
     const isPending = item.estatusDetalle === 'Pendiente';
-    const isActiveOrder = activeOrderData && activeOrderData.idPedido === item.idPedido;
+    const isActiveOrder = activeOrderData && activeOrderData.id === item.id;
     
     // Si este es el pedido activo, permitir continuar
     if (isActiveOrder) {
@@ -210,7 +210,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
         <View style={styles.cardHeader}>
           <View style={styles.orderIdContainer}>
             <Text style={styles.orderIcon}>📦</Text>
-            <Text style={styles.orderId}>Pedido #{item.idPedido}</Text>
+            <Text style={styles.orderId}>Pedido #{item.id}</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: `${statusConfig.general.color}15` }]}>
             <Text style={[styles.statusText, { color: statusConfig.general.color }]}>
@@ -300,7 +300,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
         <View style={styles.activeOrderBanner}>
           <Ionicons name="information-circle" size={20} color="#083D56" />
           <Text style={styles.activeOrderText}>
-            Tienes un viaje en curso: Pedido #{activeOrderData.idPedido}
+            Tienes un viaje en curso: Pedido #{activeOrderData.id}
           </Text>
         </View>
       )}
@@ -308,7 +308,7 @@ export default function OrdersList({ enterpriseId, onBack }) {
       {/* Lista de pedidos */}
       <FlatList
         data={orders}
-        keyExtractor={(item) => item.idPedido?.toString() || Math.random().toString()}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}

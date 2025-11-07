@@ -67,7 +67,7 @@ export default function DetailsOrderScreen({ route }) {
             <Text style={styles.sectionTitle}>INFORMACIÓN DEL PEDIDO</Text>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Número de Pedido:</Text>
-              <Text style={styles.value}>#{order.idPedido || 'N/A'}</Text>
+              <Text style={styles.value}>#{order.id || 'N/A'}</Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Fecha y Hora:</Text>

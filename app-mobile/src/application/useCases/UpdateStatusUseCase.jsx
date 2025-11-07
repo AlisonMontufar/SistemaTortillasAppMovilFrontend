@@ -3,7 +3,7 @@ export default class UpdateStatusUseCase {
     this.homeRepository = homeRepository;
   }
 
-  async execute(idPedido, estatusDetalle) {
-    return await this.homeRepository.UpdateStatus(idPedido, estatusDetalle);
+  async execute(id, estatusDetalle) {
+    return await this.homeRepository.UpdateStatus(id, estatusDetalle);
   }
 }
