@@ -65,7 +65,7 @@ export default class HomeRepositoryImpl extends HomeRepository {
       console.log('localstorage',activeOrderData);
       if (activeOrderData) {
         const activeOrder = JSON.parse(activeOrderData);
-        activeOrderId = activeOrder?.idPedido;
+        activeOrderId = activeOrder?.id;
       }
     } catch (err) {
       console.warn('⚠️ No se pudo obtener activeOrder del AsyncStorage:', err);
@@ -75,6 +75,7 @@ export default class HomeRepositoryImpl extends HomeRepository {
     const OrdersDetails = Orders.map(
       (item) =>
         new OrderDatails(
+          item.id,
           item.idPedido,
           item.empresa,
           item.nombreEncargado,
@@ -103,7 +104,7 @@ export default class HomeRepositoryImpl extends HomeRepository {
       // Si hay pedido activo, mostrar pendientes + el que está "En camino" y coincide
       return (
         order.estatusDetalle === 'Pendiente' ||
-        (order.estatusDetalle === 'En camino' && order.idPedido === activeOrderId)
+        (order.estatusDetalle === 'En camino' && order.id === activeOrderId)
       );
     });
 
@@ -114,14 +115,14 @@ export default class HomeRepositoryImpl extends HomeRepository {
   }
 }
 
-  async UpdateStatus(  idPedido, estatusDetalle ) {
+  async UpdateStatus(  id, estatusDetalle ) {
       try {
         const response = await fetch(this.apiUpdateStatusBaseUrl, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ idPedido, estatusDetalle }),
+          body: JSON.stringify({ id, estatusDetalle }),
         });
   
         if (!response.ok) {

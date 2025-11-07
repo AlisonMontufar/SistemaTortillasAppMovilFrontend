@@ -6,14 +6,14 @@ export default class SignatureRepositoryImpl extends SignatureRepository {
     this.apiSignatureBaseUrl = 'https://sistematortillasbackend-1.onrender.com/api/Pedidos/detalle/firmaporpedido';
   }
 
-  async signatureSaved(idPedido, firmaBase64) {
+  async signatureSaved(id, firmaBase64) {
     try {
       const response = await fetch(this.apiSignatureBaseUrl, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json' 
         },
-        body: JSON.stringify({ idPedido, firmaBase64}),
+        body: JSON.stringify({ id, firmaBase64}),
       });
 
       if (!response.ok) {

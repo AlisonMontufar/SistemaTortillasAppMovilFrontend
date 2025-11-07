@@ -88,7 +88,7 @@ export default function RouteMapOrderScreen({ route }) {
             try {
               // Actualizar estatus del pedido a Pendiente
               const useCase = new UpdateStatusUseCase(new HomeRepositoryImpl());
-              await useCase.execute(orderData.idPedido, 'Pendiente');
+              await useCase.execute(orderData.id, 'Pendiente');
               
               await AsyncStorage.removeItem('activeOrder');
               // ✅ Toast de cancelación exitosa
@@ -176,7 +176,7 @@ export default function RouteMapOrderScreen({ route }) {
           <View style={styles.orderIdContainer}>
             <View style={styles.orderIdSection}>
               <Text style={styles.orderLabel}>PEDIDO</Text>
-              <Text style={styles.orderId}>#{order.idPedido || 'N/A'}</Text>
+              <Text style={styles.orderId}>#{order.id || 'N/A'}</Text>
             </View>
             <View style={[
               styles.statusBadge, 

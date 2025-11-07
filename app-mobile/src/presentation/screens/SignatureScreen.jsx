@@ -42,10 +42,10 @@ export default function SignatureScreen({ route }) {
     try {
       setIsSaving(true);
       const useCaseSignature = new SignatureUseCase(new SignatureRepositoryImpl());
-      await useCaseSignature.execute(order.idPedido, signature);
+      await useCaseSignature.execute(order.id, signature);
 
       const useCaseStatus = new UpdateStatusUseCase(new HomeRepositoryImpl());
-      await useCaseStatus.execute(order.idPedido, 'Entregado');
+      await useCaseStatus.execute(order.id, 'Entregado');
 
       // 2. Limpiar AsyncStorage
       await AsyncStorage.removeItem('activeOrder');
@@ -69,7 +69,7 @@ export default function SignatureScreen({ route }) {
   return (
     <View style={{ flex: 1, padding: 20 }}>
       <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20 }}>
-        Capturar Firma - Pedido #{order.idPedido}
+        Capturar Firma - Pedido #{order.id}
       </Text>
 
       <Text>Nombre del cliente:</Text>
