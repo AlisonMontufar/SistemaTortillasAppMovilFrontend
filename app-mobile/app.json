@@ -4,6 +4,15 @@
     "slug": "app-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      "expo-font"
+    ],
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -13,20 +22,28 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+       "config": {
+        "googleMapsApiKey": "AIzaSyBaFMEyEg1yFMRNi9oGRRbUWhXHvKN2IJM"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": [
-            "ACCESS_FINE_LOCATION",
-            "ACCESS_COARSE_LOCATION"
-         ]
+        "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
-      "package": "com.danieltt.appmobile"
+      "package": "com.danieltt.appmobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBaFMEyEg1yFMRNi9oGRRbUWhXHvKN2IJM"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
