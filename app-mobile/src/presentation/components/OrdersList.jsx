@@ -9,11 +9,12 @@ import {
 import { ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useFocusEffect  } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import OrderDetailUseCase from '../../application/useCases/OrderDetailUseCase';
 import Toast from 'react-native-toast-message';
 import HomeRepositoryImpl from '../../infrastructure/repositories/HomeRepositoryImpl';
 import UpdateStatusUseCase from '../../application/useCases/UpdateStatusUseCase';
+import { useIsFocused } from "@react-navigation/native";
 
 export default function OrdersList({ enterpriseId, onBack }) {
   const [orders, setOrders] = useState([]);
@@ -22,41 +23,47 @@ export default function OrdersList({ enterpriseId, onBack }) {
   const [activeOrderData, setActiveOrderData] = useState(null);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const initializeData = async () => {
-      try {
-        setLoading(true);
-        // Verificar si existe un pedido activo en AsyncStorage
-        const storedActiveOrder = await AsyncStorage.getItem('activeOrder');
-        if (storedActiveOrder) {
-          const orderData = JSON.parse(storedActiveOrder);
-          setActiveOrderExists(true);
-          setActiveOrderData(orderData);
-        } else {
-          setActiveOrderExists(false);
-          setActiveOrderData(null);
-        }
+  const isFocused = useIsFocused();
 
-        // Cargar los pedidos
-        const useCase = new OrderDetailUseCase(new HomeRepositoryImpl());
-        const apiData = await useCase.execute(enterpriseId);
-        console.log(apiData);
-        setOrders(apiData);
-      } catch (err) {
-        console.error(err);
-        Toast.show({
-          type: 'error',
-          text1: 'Error al cargar pedidos',
-          text2: err.message || 'Intenta nuevamente más tarde',
-          position: 'top',
-        });
-      } finally {
-        setLoading(false);
+  const initializeData = async () => {
+    try {
+      setLoading(true);
+
+      // Leer pedido activo
+      const storedActiveOrder = await AsyncStorage.getItem('activeOrder');
+      if (storedActiveOrder) {
+        const orderData = JSON.parse(storedActiveOrder);
+        setActiveOrderExists(true);
+        setActiveOrderData(orderData);
+      } else {
+        setActiveOrderExists(false);
+        setActiveOrderData(null);
       }
-    };
 
-    initializeData();
-  }, [enterpriseId]);
+      // Traer pedidos
+      const useCase = new OrderDetailUseCase(new HomeRepositoryImpl());
+      const apiData = await useCase.execute(enterpriseId);
+      setOrders(apiData);
+
+    } catch (err) {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        text1: 'Error al cargar pedidos',
+        text2: err.message || 'Intenta nuevamente más tarde',
+        position: 'top',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Se llama cada vez que la pantalla padre vuelve a ser visible
+  useEffect(() => {
+    if (isFocused) {
+      initializeData();
+    }
+  }, [isFocused, enterpriseId]);
 
   const handleStartOrder = async (item) => {
     try {
@@ -279,7 +286,6 @@ export default function OrdersList({ enterpriseId, onBack }) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#083D56" />
-        <Text style={styles.loadingText}>Cargando pedidos...</Text>
       </View>
     );
   }
@@ -325,7 +331,6 @@ export default function OrdersList({ enterpriseId, onBack }) {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    backgroundColor: '#F9FAFB'
   },
   headerContainer: {
     flexDirection: 'row',
@@ -333,7 +338,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
+    
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
@@ -505,12 +510,6 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center',
-    backgroundColor: '#F9FAFB'
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#6B7280',
   },
   emptyContainer: {
     alignItems: 'center',

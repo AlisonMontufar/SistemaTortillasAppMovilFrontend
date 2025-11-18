@@ -43,27 +43,27 @@ export default function EnterpriseGrid() {
   const [loading, setLoading] = useState(true);
   const [selectedEnterprise, setSelectedEnterprise] = useState(null);
 
-  useEffect(() => {
-    const fetchEnterprises = async () => {
-      setLoading(true);
-      try {
-        const useCase = new HomeUseCase(new HomeRepositoryImpl());
-        const apiData = await useCase.execute();
-        setEnterprises(apiData);
-      } catch (e) {
-        console.error('Error al obtener las empresas:', e);
-        // 👇 Mostrar Toast elegante en lugar de texto feo
-        Toast.show({
-          type: 'error',
-          text1: 'Error al cargar clientes',
-          text2: e.message || 'Intenta nuevamente.',
-          position: 'top',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchEnterprises = async () => {
+    setLoading(true);
+    try {
+      const useCase = new HomeUseCase(new HomeRepositoryImpl());
+      const apiData = await useCase.execute();
+      setEnterprises(apiData);
+    } catch (e) {
+      console.error('Error al obtener las empresas:', e);
+      // 👇 Mostrar Toast elegante en lugar de texto feo
+      Toast.show({
+        type: 'error',
+        text1: 'Error al cargar clientes',
+        text2: e.message || 'Intenta nuevamente.',
+        position: 'top',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchEnterprises();
   }, []);
 
@@ -73,6 +73,7 @@ export default function EnterpriseGrid() {
 
   const handleBack = () => {
     setSelectedEnterprise(null);
+    fetchEnterprises();
   };
 
   // 🔄 Vista de pedidos
@@ -89,7 +90,7 @@ export default function EnterpriseGrid() {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#FF9800" />
+        <ActivityIndicator size="large" color="#083D56" />
       </View>
     );
   }
@@ -110,6 +111,9 @@ export default function EnterpriseGrid() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Lista de Empresas</Text>
+      </View>
       <FlatList
         data={enterprises}
         renderItem={renderItem}
@@ -126,7 +130,21 @@ export default function EnterpriseGrid() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#083D56',
+    padding: 4
   },
   listContent: {
     paddingHorizontal: GRID_PADDING,
