@@ -9,8 +9,10 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EnterpriseGrid from '../components/EnterpriseGrid';
+import Toast from 'react-native-toast-message';
 
 const PRIMARY_COLOR = '#EC9D02';
 const GRADIENT_COLORS = ['#FFD700', PRIMARY_COLOR, '#B8860B'];
@@ -20,6 +22,8 @@ export default function HomeScreen() {
   const [user, setUser] = useState(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
+  const navigation = useNavigation();
+  
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -40,6 +44,29 @@ export default function HomeScreen() {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  const handleLogout = async () => {
+      try {
+        await AsyncStorage.removeItem('user');
+        
+        Toast.show({
+          type: 'success',
+          text1: 'La sesión se ha cerrado exitosamente',
+          text2: 'Inicia sesión nuevamente',
+          position: 'top',
+        });
+      
+        navigation.navigate('Login');
+      
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'La sesión no se pudo cerrar',
+          text2: error.message || 'Intenta nuevamente mas tarde',
+          position: 'top',
+        });
+      }
+    };
 
   return (
     <LinearGradient
@@ -92,9 +119,10 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.iconContainer}
             activeOpacity={0.7}
+            onPress={handleLogout}
           >
             <View style={styles.iconWrapper}>
-              <Ionicons name="settings-sharp" size={24} color="white" />
+              <Ionicons name="log-out-outline" size={24} color="white" />
             </View>
           </TouchableOpacity>
         </View>
