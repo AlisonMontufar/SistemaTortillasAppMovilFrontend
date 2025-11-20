@@ -2,10 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
 
 export default function DetailsOrderScreen({ route }) {
   const { order } = route.params;
   const navigation = useNavigation();
+
+  const insets = useSafeAreaInsets(); 
 
   const handleConfirmDelivery = () => {
     navigation.navigate('Signature', {order: order })
@@ -151,7 +154,7 @@ export default function DetailsOrderScreen({ route }) {
       </ScrollView>
 
       {/* Botón de Acción */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 20}]}>
         <TouchableOpacity 
           style={styles.confirmButton}
           onPress={handleConfirmDelivery}
@@ -185,11 +188,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   headerTitle: {
+    paddingTop: 20,
     fontSize: 18,
     fontWeight: '700',
     color: '#083D56',
   },
   backButton: {
+    paddingTop: 20,
     padding: 4,
   },
   headerPlaceholder: {
@@ -319,19 +324,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#083D56',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
     shadowColor: '#083D56',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 6,
+    elevation: 4,
   },
   confirmButtonText: {
     color: 'white',
     fontWeight: '700',
-    fontSize: 16,
-    letterSpacing: 0.5,
+    fontSize: 14,
+    letterSpacing: 0.3,
   },
 });
