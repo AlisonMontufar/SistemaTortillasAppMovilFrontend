@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import MapRoute from '../components/MapRoute';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,23 +7,28 @@ import { useNavigation } from '@react-navigation/native';
 import UpdateStatusUseCase from '../../application/useCases/UpdateStatusUseCase';
 import HomeRepositoryImpl from '../../infrastructure/repositories/HomeRepositoryImpl';
 import Toast from 'react-native-toast-message';
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { height } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function RouteMapOrderScreen({ route }) {
   const { orderData } = route.params;
   const navigation = useNavigation();
-
-
+  const insets = useSafeAreaInsets(); 
+  
+  const sheetRef = useRef(null);
   const [hasArrived, setHasArrived] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+
+  // Alturas del BottomSheet
+  const snapPoints = useMemo(() => ["30%", "90%"], []);
 
   // El MapRoute notifica cuando llegamos al destino
   const handleArrive = () => {
     console.log("📍 MapRoute notificó que llegó al destino");
     setHasArrived(true);
     
-    // ✅ Toast informativo cuando se llega al destino
     Toast.show({
       type: 'success',
       text1: '¡Has llegado al destino!',
@@ -38,25 +43,21 @@ export default function RouteMapOrderScreen({ route }) {
     try {
       setIsFinalizing(true);
       
-      // ✅ Toast de carga
       Toast.show({
         type: 'info',
         text1: 'Finalizando viaje...',
         position: 'top',
       });
       
-      // Esperar un momento para que se vea el toast de info
       setTimeout(() => {
-        // Navegar a la vista de detalle pedido
-      navigation.navigate('DetailsOrder', { 
-        order: orderData 
-      });
+        navigation.navigate('DetailsOrder', { 
+          order: orderData 
+        });
       }, 2000);
       
     } catch (error) {
       console.error('Error al finalizar viaje:', error);
       
-      // ✅ Toast de error
       Toast.show({
         type: 'error',
         text1: 'Error al finalizar viaje',
@@ -86,12 +87,10 @@ export default function RouteMapOrderScreen({ route }) {
           text: "Sí, cancelar",
           onPress: async () => {
             try {
-              // Actualizar estatus del pedido a Pendiente
               const useCase = new UpdateStatusUseCase(new HomeRepositoryImpl());
               await useCase.execute(orderData.id, 'Pendiente');
               
               await AsyncStorage.removeItem('activeOrder');
-              // ✅ Toast de cancelación exitosa
               Toast.show({
                 type: 'success',
                 text1: 'Viaje cancelado',
@@ -107,7 +106,6 @@ export default function RouteMapOrderScreen({ route }) {
             } catch (error) {
               console.error('Error al cancelar el pedido:', error);
               
-              // ✅ Toast de error en cancelación
               Toast.show({
                 type: 'error',
                 text1: 'Error al cancelar',
@@ -122,9 +120,7 @@ export default function RouteMapOrderScreen({ route }) {
     );
   };
 
-  // ✅ Si no viene nada, evita error
   const order = orderData || {};
-  console.log(order);
   
   // Construir el objeto destino para MapRoute
   const destination = {
@@ -136,104 +132,176 @@ export default function RouteMapOrderScreen({ route }) {
     estado: order.estado || "Conocida"
   };
 
+  // Formatear fecha
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Formatear moneda
+  const formatCurrency = (amount) => {
+    return `$${amount?.toLocaleString('es-MX') || '0'}`;
+  };
+
   return (
-    <View style={styles.Background}>
-      {/* --- MAPA (MÁS GRANDE) --- */}
-      <View style={styles.cardMap}>
+    <View style={styles.container}>
+      {/* --- MAPA --- */}
+      <View style={styles.mapContainer}>
         <MapRoute 
-          onArrive={handleArrive} // ✅ MapRoute notificará cuando llegue
+          onArrive={handleArrive}
           destino={destination}
         />
       </View>
 
-      {/* --- INFORMACIÓN COMPACTA DEL PEDIDO --- */}
-      <View style={styles.cardInfo}>
-        <ScrollView 
-          style={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-        >
-          {/* Header con botones de acción */}
-          <View style={styles.headerContainer}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Ionicons name="arrow-back" size={18} color="#083D56" />
-              <Text style={styles.backText}>Volver</Text>
-            </TouchableOpacity>
+      {/* --- BOTTOM SHEET CON TODA LA INFORMACIÓN --- */}
+      <BottomSheet
+        ref={sheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        enablePanDownToClose={false}
+        handleIndicatorStyle={styles.handle}
+        backgroundStyle={styles.cardBackground}
+        style={styles.bottomSheet}
+      >
+        <BottomSheetView style={[styles.contentContainer,  { paddingBottom: insets.bottom + 20 }]}>
+          <ScrollView 
+            style={styles.scrollContent}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.scrollContainer}
+          >
+            {/* Header con botones de acción */}
+            <View style={styles.headerContainer}>
+              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+                <Ionicons name="arrow-back" size={18} color="#083D56" />
+                <Text style={styles.backText}>Volver</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.cancelButton} 
-              onPress={handleCancelOrder}
-              disabled={hasArrived} // ✅ Deshabilitar cancelar si ya llegó
-            >
-              <Ionicons name="close-circle-outline" size={16} color={hasArrived ? "#9CA3AF" : "#EF4444"} />
-              <Text style={[styles.cancelText, hasArrived && styles.disabledText]}>
-                Cancelar
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ID del Pedido y Estatus */}
-          <View style={styles.orderIdContainer}>
-            <View style={styles.orderIdSection}>
-              <Text style={styles.orderLabel}>PEDIDO</Text>
-              <Text style={styles.orderId}>#{order.id || 'N/A'}</Text>
-            </View>
-            <View style={[
-              styles.statusBadge, 
-              { 
-                backgroundColor: hasArrived ? '#D1FAE5' : '#E0F2FE'
-              }
-            ]}>
-              <Text style={[
-                styles.statusText, 
-                { color: hasArrived ? '#065F46' : '#0369A1' }
-              ]}>
-                {hasArrived ? 'EN DESTINO' : 'EN CAMINO'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Información compacta */}
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <View style={styles.labelContainer}>
-                <Ionicons name="business-outline" size={14} color="#6B7280" />
-                <Text style={styles.label}>Sucursal:</Text>
-              </View>
-              <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
-                {order.sucursal || 'No especificada'}
-              </Text>
-            </View>
-          </View>
-
-          {/* --- CONTENIDO DINÁMICO --- */}
-          {hasArrived ? (
-            // ✅ MOSTRAR BOTÓN DE FINALIZAR cuando se llega al destino
-            <View style={styles.finalizeSection}>
-              <View style={styles.arrivedMessage}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.arrivedText}>¡Has llegado al destino!</Text>
-              </View>
               <TouchableOpacity 
-                style={[styles.btnFinish, isFinalizing && styles.btnDisabled]}
-                onPress={handleFinishTrip}
-                disabled={isFinalizing}
+                style={styles.cancelButton} 
+                onPress={handleCancelOrder}
+                disabled={hasArrived}
               >
-                {isFinalizing ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={styles.btnText}>FINALIZANDO...</Text>
-                  </View>
-                ) : (
-                  <>
-                    <Ionicons name="checkmark-circle" size={20} color="white" />
-                    <Text style={styles.btnText}>FINALIZAR VIAJE</Text>
-                  </>
-                )}
+                <Ionicons name="close-circle-outline" size={16} color={hasArrived ? "#9CA3AF" : "#EF4444"} />
+                <Text style={[styles.cancelText, hasArrived && styles.disabledText]}>
+                  Cancelar
+                </Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            // ✅ MOSTRAR DIRECCIÓN cuando aún está en camino
+
+            {/* ID del Pedido y Estatus */}
+            <View style={styles.orderIdContainer}>
+              <View style={styles.orderIdSection}>
+                <Text style={styles.orderLabel}>PEDIDO</Text>
+                <Text style={styles.orderId}>#{order.id || 'N/A'}</Text>
+              </View>
+              <View style={[
+                styles.statusBadge, 
+                { 
+                  backgroundColor: hasArrived ? '#D1FAE5' : '#E0F2FE'
+                }
+              ]}>
+                <Text style={[
+                  styles.statusText, 
+                  { color: hasArrived ? '#065F46' : '#0369A1' }
+                ]}>
+                  {hasArrived ? 'EN DESTINO' : 'EN CAMINO'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Información básica siempre visible */}
+            <View style={styles.basicInfoContainer}>
+              <View style={styles.infoRow}>
+                <View style={styles.labelContainer}>
+                  <Ionicons name="business-outline" size={14} color="#6B7280" />
+                  <Text style={styles.label}>Sucursal:</Text>
+                </View>
+                <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+                  {order.sucursal || 'No especificada'}
+                </Text>
+              </View>
+              
+              <View style={styles.infoRow}>
+                <View style={styles.labelContainer}>
+                  <Ionicons name="cube-outline" size={14} color="#6B7280" />
+                  <Text style={styles.label}>Producto:</Text>
+                </View>
+                <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+                  {order.producto || 'N/A'}
+                </Text>
+              </View>
+              
+              <View style={styles.infoRow}>
+                <View style={styles.labelContainer}>
+                  <Ionicons name="person-outline" size={14} color="#6B7280" />
+                  <Text style={styles.label}>Encargado:</Text>
+                </View>
+                <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+                  {order.nombreEncargado || 'No especificado'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Información detallada del pedido */}
+            <View style={styles.detailedSection}>
+              <View style={styles.detailGrid}>
+                <View style={styles.detailItem}>
+                  <View style={styles.detailLabelContainer}>
+                    <Ionicons name="calendar-outline" size={14} color="#6B7280" />
+                    <Text style={styles.detailLabel}>Fecha del pedido:</Text>
+                  </View>
+                  <Text style={styles.detailValue}>{formatDate(order.fechaHora)}</Text>
+                </View>
+                
+                <View style={styles.detailItem}>
+                  <View style={styles.detailLabelContainer}>
+                    <Ionicons name="stats-chart-outline" size={14} color="#6B7280" />
+                    <Text style={styles.detailLabel}>Cantidad:</Text>
+                  </View>
+                  <Text style={styles.detailValue}>{order.cantidad || '0'} kg</Text>
+                </View>
+                
+                <View style={styles.detailItem}>
+                  <View style={styles.detailLabelContainer}>
+                    <Ionicons name="cash-outline" size={14} color="#6B7280" />
+                    <Text style={styles.detailLabel}>Total:</Text>
+                  </View>
+                  <Text style={[styles.detailValue, styles.totalText]}>
+                    {formatCurrency(order.total)}
+                  </Text>
+                </View>
+                
+                <View style={styles.detailItem}>
+                  <View style={styles.detailLabelContainer}>
+                    <Ionicons name="business-outline" size={14} color="#6B7280" />
+                    <Text style={styles.detailLabel}>Empresa:</Text>
+                  </View>
+                  <Text style={styles.detailValue}>{order.empresa || 'N/A'}</Text>
+                </View>
+                
+                <View style={styles.detailItem}>
+                  <View style={styles.detailLabelContainer}>
+                    <Ionicons name="document-text-outline" size={14} color="#6B7280" />
+                    <Text style={styles.detailLabel}>Estatus:</Text>
+                  </View>
+                  <View style={styles.statusDetail}>
+                    <Text style={styles.detailValue}>{order.estatusGeneral || 'N/A'}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+            
+            {/* Dirección de entrega */}
             <View style={styles.addressSection}>
               <View style={styles.addressHeader}>
                 <Ionicons name="location-outline" size={16} color="#374151" />
@@ -245,45 +313,86 @@ export default function RouteMapOrderScreen({ route }) {
               <Text style={styles.addressCity} numberOfLines={1}>
                 {`CP ${order.codigoPostal || ''}, ${order.ciudad || ''}, ${order.estado || ''}`}
               </Text>
-              
-              {/* ✅ Indicador de distancia en tiempo real */}
+            </View>
+
+            {/* Contenido dinámico - Botón de finalizar o indicador de distancia */}
+            {hasArrived ? (
+              <View>
+                <View style={styles.arrivedMessage}>
+                  <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                  <Text style={styles.arrivedText}>¡Has llegado al destino!</Text>
+                </View>
+                <TouchableOpacity 
+                  style={[styles.btnFinish, isFinalizing && styles.btnDisabled]}
+                  onPress={handleFinishTrip}
+                  disabled={isFinalizing}
+                >
+                  {isFinalizing ? (
+                    <View style={styles.loadingContainer}>
+                      <Text style={styles.btnText}>FINALIZANDO...</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Ionicons name="checkmark-circle" size={20} color="white" />
+                      <Text style={styles.btnText}>FINALIZAR VIAJE</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
               <View style={styles.distanceHint}>
                 <Ionicons name="navigate" size={14} color="#083D56" />
                 <Text style={styles.distanceHintText}>
                   Acércate a menos de 30 metros para finalizar
                 </Text>
               </View>
-            </View>
-          )}
-        </ScrollView>
-      </View>
+            )}
+
+          </ScrollView>
+        </BottomSheetView>
+      </BottomSheet>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  Background: {
+  container: {
     flex: 1,
+    backgroundColor: "#F2F3F4",
   },
-  cardMap: {
+  mapContainer: {
     width: '100%',
-    height: height * 0.70,
+    height: screenHeight * 0.85,
   },
-  cardInfo: {
-    flex: 1,
-    backgroundColor: 'white',
+  bottomSheet: {
+  },
+  handle: {
+    backgroundColor: "#083D56",
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  cardBackground: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
   },
+  contentContainer: {
+    flex: 1,
+  },
   scrollContent: {
     flex: 1,
   },
   scrollContainer: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 16,
   },
   headerContainer: {
@@ -331,7 +440,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
@@ -364,7 +473,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  infoContainer: {
+  basicInfoContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 12,
   },
   infoRow: {
@@ -372,7 +484,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
-    paddingVertical: 4,
   },
   labelContainer: {
     flexDirection: 'row',
@@ -392,9 +503,79 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
-  // Estilos para la sección de finalización
-  finalizeSection: {
-    marginTop: 8,
+  addressSection: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#083D56',
+  },
+  addressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  addressTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  addressText: {
+    fontSize: 13,
+    color: '#4B5563',
+    marginBottom: 4,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  addressCity: {
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 16,
+  },
+  detailedSection: {
+    marginBottom: 12,
+  },
+  detailGrid: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 12,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  detailLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  detailLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  detailValue: {
+    fontSize: 13,
+    color: '#1F2937',
+    fontWeight: '600',
+    textAlign: 'right',
+    flex: 1,
+  },
+  totalText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  statusDetail: {
+    alignItems: 'flex-end',
   },
   arrivedMessage: {
     flexDirection: 'row',
@@ -441,51 +622,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: 0.3,
   },
-  // Estilos para la sección de dirección
-  addressSection: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: '#083D56',
-  },
-  addressHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
-  },
-  addressTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  addressText: {
-    fontSize: 13,
-    color: '#4B5563',
-    marginBottom: 4,
-    lineHeight: 18,
-    fontWeight: '500',
-  },
-  addressCity: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
-  },
   distanceHint: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    padding: 8,
+    padding: 12,
     backgroundColor: '#EFF6FF',
-    borderRadius: 6,
-    gap: 6,
+    borderRadius: 8,
+    gap: 8,
   },
   distanceHintText: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#083D56',
     fontWeight: '500',
     flex: 1,
-  },
+  }
 });
