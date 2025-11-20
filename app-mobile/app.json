@@ -39,6 +39,13 @@
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
       "package": "com.danieltt.appmobile",
+      
+      "androidNavigationBar": {
+        "visible": "leanback",
+        "backgroundColor": "transparent",
+        "barStyle": "light-content"
+      },
+
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBaFMEyEg1yFMRNi9oGRRbUWhXHvKN2IJM"
