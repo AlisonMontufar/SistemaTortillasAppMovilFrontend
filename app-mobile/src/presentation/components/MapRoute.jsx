@@ -71,13 +71,28 @@ export default function MapRoute({ destino, onArrive }) {
       try {
         setLoading(true);
 
-        // 1. Geocodificar el destino si existe
+        // 1. Geocodificar el destino si existe y si no hay latitud y longitud
+        // let finalDestinationCoords;
+        // if (destino && destino.calle) {
+        //   console.log('Geocodificando destino:', destino);
+        //   finalDestinationCoords = await geocodeAddress(destino);
+        // } else {
+        //   console.log('Usando destino por defecto');
+        //   finalDestinationCoords = { latitude: 19.4326, longitude: -99.1332 };
+        // }
+
+        
+        //2. Usando la latitud y longitud para la ruta del mapa 
         let finalDestinationCoords;
-        if (destino && destino.calle) {
-          console.log('Geocodificando destino:', destino);
-          finalDestinationCoords = await geocodeAddress(destino);
-        } else {
-          console.log('Usando destino por defecto');
+        if (destino?.latitud && destino?.longitud) {
+          finalDestinationCoords = {
+            latitude: parseFloat(destino.latitud),
+            longitude: parseFloat(destino.longitud)
+          };
+          console.log("Destino recibido por coordenadas:", finalDestinationCoords);
+        
+        }  else {
+          console.log("Usando destino por defecto");
           finalDestinationCoords = { latitude: 19.4326, longitude: -99.1332 };
         }
 
@@ -184,14 +199,14 @@ export default function MapRoute({ destino, onArrive }) {
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        region={{
+        initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
           latitudeDelta: 0.03,
           longitudeDelta: 0.03,
         }}
         showsUserLocation={false}
-        followsUserLocation={true}
+        followsUserLocation={false}
       >
         {/* Marcador animado del repartidor */}
         <Marker.Animated

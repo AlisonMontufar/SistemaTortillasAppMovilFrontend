@@ -124,12 +124,14 @@ export default function RouteMapOrderScreen({ route }) {
   
   // Construir el objeto destino para MapRoute
   const destination = {
-    calle: order.calle || "Con dirección",
-    ciudad: order.ciudad || "Conocida",
-    numero: order.numero || "S/N", 
-    codigoPostal: order.codigoPostal || "11111",
-    colonia: order.colonia || "Conocida",
-    estado: order.estado || "Conocida"
+    latitud: order.latitud,
+    longitud: order.longitud,
+    //calle: order.calle || "Con dirección",
+    //ciudad: order.ciudad || "Conocida",
+    //numero: order.numero || "S/N", 
+    //codigoPostal: order.codigoPostal || "11111",
+    //colonia: order.colonia || "Conocida",
+    //estado: order.estado || "Conocida"
   };
 
   // Formatear fecha

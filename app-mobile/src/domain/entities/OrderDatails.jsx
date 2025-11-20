@@ -1,6 +1,6 @@
 export default class OrderDetails {
   constructor(id, idPedido, empresa, nombreEncargado, sucursal, estatusGeneral, estatusDetalle, fechaHora,
-    cantidad, total, producto, calle, numero, colonia, codigoPostal, ciudad, estado
+    cantidad, total, producto, calle, numero, colonia, codigoPostal, ciudad, estado, latitud, longitud
   ) {
     this.id = id, 
     this.idPedido = idPedido, 
@@ -18,6 +18,8 @@ export default class OrderDetails {
     this.colonia = colonia, 
     this.codigoPostal = codigoPostal, 
     this.ciudad = ciudad,
-    this.estado = estado
+    this.estado = estado,
+    this.latitud = latitud,
+    this.longitud = longitud
   }
 }
