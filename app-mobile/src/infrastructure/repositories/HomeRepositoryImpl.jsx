@@ -91,7 +91,9 @@ export default class HomeRepositoryImpl extends HomeRepository {
           item.colonia,
           item.codigoPostal,
           item.ciudad,
-          item.estado
+          item.estado,
+          item.latitud,
+          item.longitud
         )
     );
  
