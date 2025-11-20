@@ -4,6 +4,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+import Toast from 'react-native-toast-message'; //Mensaje global
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import UpdateStatusUseCase from '../../application/useCases/UpdateStatusUseCase';
+import HomeRepositoryImpl from '../../infrastructure/repositories/HomeRepositoryImpl';
 
 // Hook de validación
 import { useSupportValidation } from '../../application/hooks/useSupportValidation';
@@ -74,20 +78,35 @@ export default function TechnicalSupportScreen() {
       // Simular envío
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      Alert.alert(
-        'Reporte Enviado',
-        'Tu reporte ha sido enviado correctamente. Nos pondremos en contacto contigo pronto.',
-        [
-          {
-            text: 'Aceptar',
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
+
+      // Cambiar estatus del pedido
+      const useCaseStatus = new UpdateStatusUseCase(new HomeRepositoryImpl());
+      await useCaseStatus.execute(orderId, 'Pendiente');
+
+      // Limpiar pedido activo
+      await AsyncStorage.removeItem('activeOrder');
+
+      // ✅ Toast de éxito
+      Toast.show({
+        type: 'error',
+        text1: 'Reporte Enviado',
+        text2: ' Nos pondremos en contacto contigo pronto.',
+        position: 'top',
+      });
+
+      navigation.navigate('MainContainer');
 
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'No se pudo enviar el reporte. Intenta nuevamente.');
+      
+      // ❌ Toast de error
+      Toast.show({
+        type: 'error',
+        text1: 'Error al mandar el Reporte',
+        text2: error.message || 'Intenta nuevamente',
+        position: 'top',
+      });
+
     } finally {
       setIsSubmitting(false);
     }
