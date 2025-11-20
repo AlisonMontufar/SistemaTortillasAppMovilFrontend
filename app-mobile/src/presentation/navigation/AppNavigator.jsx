@@ -9,6 +9,7 @@ import ContainerScreen from '../screens/ContainerScreen';
 import SignatureScreen from '../screens/SignatureScreen';
 import RouteMapOrderScreen from '../screens/RouteMapOrderScreen';
 import DetailsOrderScreen from '../screens/DetailsOrderScreen';
+import TechnicalSupportScreen from '../screens/TechnicalSupportScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ export default function AppNavigator() {
         <Stack.Screen options={{ headerShown: false }} name="Signature" component={SignatureScreen} />
         <Stack.Screen options={{ headerShown: false }} name="RouterMapOrder" component={RouteMapOrderScreen} />
         <Stack.Screen options={{ headerShown: false }} name="DetailsOrder" component={DetailsOrderScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="TechnicalSupport" component={TechnicalSupportScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
